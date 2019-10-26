@@ -36,23 +36,24 @@ FILE * fp = NULL ;
 int * ma = NULL;
 int *mb = NULL;
 int * mo = NULL;
-
+pthread_mutex_t lock;
 int rowA;
 int rowB;
 int colA;
 int colB;
-int iterC=0;
-int iterR=0;
+
 
 int main(int argc, const char * argv[]) {
 	
 
 	int i;
 	int j;
+	int iterC=0;
+	int iterR=0;
 	int threadCounter=0;
 	int k;
 	clock_t time, time2;
-	pthread_mutex_t lock;
+
 	
 	
 	
@@ -76,12 +77,16 @@ int main(int argc, const char * argv[]) {
 					input-> itC = iterC;
 					pthread_mutex_unlock(&lock);
 					pthread_create(&t[threadCounter],NULL,elementCalc, input);
+					pthread_mutex_lock(&lock);
 					iterC++;
+					pthread_mutex_unlock(&lock);
 					threadCounter++;
 					
 				}
+				pthread_mutex_lock(&lock);
 				iterC = 0;
 				iterR++;
+				pthread_mutex_unlock(&lock);
 			}
 		
 		
@@ -211,7 +216,9 @@ void* elementCalc(void * args)
 			sum+= *(ma + ((r * ca) + i)) * *(mb + ((cb * i ) + c));
 			
 		}
+	//	pthread_mutex_lock(&lock);
 		*(mo + ( r * ca) + c) = sum;
+		//pthread_mutex_unlock(&lock);
 		//printf("%d\n",sum);
 	}
 	
@@ -235,7 +242,7 @@ void * rowCalc(void * args)
 		int cb = in->cB;
 		int ra = in->rA;
 		int ca = in -> cA;
-		int i,j,sum = 0;
+		int i,sum = 0;
 		
 		
 		
